@@ -11,3 +11,4 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python -m pytest -q
       - run: python scripts/run_backtest.py --out /tmp/results
+      - run: python scripts/leakage_diagnostics.py

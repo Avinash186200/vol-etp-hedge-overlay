@@ -14,7 +14,7 @@ I built this as a research project. After I found and removed a look-ahead bias 
 | **Method** | Backward-looking volatility, momentum and implied-vs-realised features; gradient-boosted regression on forward book returns; expanding walk-forward; past-only percentile mapping to a weight |
 | **Output** | Out-of-sample score and weight per day, overlay PnL after costs, Sharpe / drawdown / block-permutation p-value against the static 80/20 book |
 | **Leakage controls** | Features use closes up to t-1 only; purge gap = label horizon + embargo; past-only percentile; fixed scale; noise and planted-signal tests in CI |
-| **Status** | Research complete. No reliable edge after the bias fix. Results below are synthetic |
+| **Status** | Research complete. No validated edge after the bias fix, and a later independent review did not change that. Results below are synthetic |
 
 ## How it works
 
@@ -50,6 +50,19 @@ The same effect shows on synthetic data (`python scripts/run_backtest.py`, seed 
 
 There is no signal in this data, so every model should be at noise level. Among the models, the leaky T+20 one ranks first; with no signal in the data, the only thing separating it from the purged T+20 model is the label overlap. This is one seed, and none of the p-values is significant, so I read it as the direction of the bias, not its size. None of them beats the constant short, which earns the ETP decay with no model at all. That is the same baseline the real-data overlay failed to beat. With a planted signal (`--signal 0.3`), the purged T+1 model recovers it (Sharpe 2.17, p = 0.005), while the purged T+20 model, which targets the wrong horizon, does not (Sharpe -0.28, p = 0.55). So the pipeline finds real structure when it is there and stays at noise level when it isn't.
 
+## Later review: what it confirmed and what it added
+
+Since building this repo, I have gone through an independent review of the same project. A colleague ran it on the full research pipeline, with richer data than I can publish. It changed some details but not the verdict.
+
+- **The label-overlap bug is confirmed by tests that need only the scores.** A feature-timestamp audit cannot see this bug, because no feature looks ahead. The review used two checks on the out-of-sample score history instead:
+  - **IC by lead**: the leaky multi-horizon members' IC fell to zero exactly at the day where their training labels stopped containing the future return. Honest members showed no such edge.
+  - **Refit-cycle fingerprint**: a model refitted every few days had skill on exactly the cycle days whose training labels contained the predicted return, and none on the others. Real skill has no reason to follow the refit calendar.
+
+  Re-running the same recipe with only the embargo changed removed most of the apparent skill. I've added both checks here as `volhedge.diagnostics` and `scripts/leakage_diagnostics.py`, with tests on planted cases. On this repo's synthetic data, the leaky T+20 model's fingerprint points the right way but is not significant (IC +0.04 on overlap days vs -0.06 on clean days, p = 0.18). The stylised generator has little persistent structure for a model to memorise. The purged model has no overlap days at all.
+- **What is left after removing the leaky members is weak.** I wrote earlier that information coefficients were close to zero. The review, using a richer feature set than I could rebuild, measured the non-leaking members at a small positive IC on the book. That figure is preliminary, not validated on a final hold-out, and declining over the years. Everything it found that improved the honest version came from costs (an ETF implementation instead of futures), turnover (more score smoothing) and exposure management (reducing a position as it ages). None of it came from new predictive information. Most of the P&L came from a small share of post-shock days. Hundreds of configurations were tried and the hold-out year was reused, so I treat those performance figures as unvalidated and do not publish them.
+- **The book is mostly one trade.** Because the VIX-futures leg has a large negative beta to equities, 80/20 is close to a beta-neutral position in the futures leg. The signals predicted that residual, not either leg on its own.
+- **A data lesson from the futures version.** That implementation computed futures returns across a contract switch on roll days, using the wrong expiry rule, which booked the calendar spread as P&L. The ETF book here is not affected, but the rule is general: compute returns on the same contract.
+
 ## Leakage and bias audit
 
 All of these were in the original research code. The details are in [docs/methodology.md](docs/methodology.md).
@@ -64,13 +77,15 @@ All of these were in the original research code. The details are in [docs/method
 | Permutation test shuffled scores day by day | Null too easy to beat, since smoothed scores are autocorrelated | Block permutation (21-day blocks) of positions |
 | Blended cost under 1 bp | Optimistic for a vol ETP | 2 bp per unit turnover by default (`--cost-bp`) |
 | Comparison only against the static book | Net-short decay harvest looked like skill | Constant-short book reported alongside every run, plus mean weight |
+| Label overlap is invisible to a feature-timestamp audit | A leaky model passes the usual checks | IC-by-lead and refit-cycle fingerprint on the scores (`diagnostics.py`); tested on planted cases |
 
 ## Repo layout
 
 ```
-src/volhedge/   data.py · features.py · walkforward.py · strategy.py
-scripts/        run_backtest.py
-tests/          feature timing, purge, leaky-gap overlap, past-only positions, noise, planted signal
+src/volhedge/   data.py · features.py · walkforward.py · strategy.py · diagnostics.py
+scripts/        run_backtest.py · leakage_diagnostics.py
+tests/          feature timing, purge, leaky-gap overlap, past-only positions, noise, planted signal,
+                label-overlap counts, fingerprint and IC-by-lead on planted cases
 docs/           methodology.md
 ```
 
@@ -82,6 +97,7 @@ python -m pytest -q
 python scripts/run_backtest.py                     # synthetic, no signal
 python scripts/run_backtest.py --signal 0.3        # synthetic, planted signal
 python scripts/run_backtest.py --prices my.csv     # your own date,spy,vixy,vix closes
+python scripts/leakage_diagnostics.py              # label-overlap fingerprint, leaky vs purged
 ```
 
 ## License
