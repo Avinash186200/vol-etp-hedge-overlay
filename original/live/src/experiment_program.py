@@ -2,7 +2,7 @@
 experiment_program.py  —  VIXY close[T]->close[T+1] forecast, predicted at 3pm day T
 ====================================================================================
 Honest, anti-overfit experiment program. Uses EVERYTHING available by 3pm:
-  - feats.csv F1..F139   (client IP, generated pre-open day T -> point-in-time OK)
+  - feats.csv F1..F139   (proprietary, generated pre-open day T -> point-in-time OK)
   - AR VIXY features     (lagged, 3pm-safe)
   - prior-day VIX/RV/IV  (shift 1)
   - same-day intraday <=15:00  (SPY/VIXY 3pm moves, overnight gap, AM/PM drift)

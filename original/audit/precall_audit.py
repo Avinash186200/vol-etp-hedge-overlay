@@ -314,7 +314,7 @@ pass_("Member dropout audit: removing any one member, Sharpe stays > 2.20",
 
 # ==========================================================================
 header("9. WHAT WE ARE NOT CLAIMING")
-info("Honest disclosures (include in client conversation):")
+info("Honest disclosures (include in the results discussion):")
 info("  • Pre-2021 is training/burn-in for the percentile baseline, NOT held-out validation")
 info("  • Mechanic params were tuned on 2021+ data once, then frozen (this was the WIN-tier param)")
 info("  • Cost assumed flat 0.9 bp; real impact varies with size and venue")
@@ -339,7 +339,7 @@ info("    → live window is 2021-01-01 onwards (5+ continuous years, including 
 header("FINAL AUDIT VERDICT")
 print("  All checks PASS.")
 print("  WIN9 @ Sharpe 2.28 is statistically and methodologically sound.")
-print("  Safe to present to client with the disclosures noted.")
+print("  Safe to present with the disclosures noted.")
 
 # Save machine-readable verdict
 verdict = dict(
