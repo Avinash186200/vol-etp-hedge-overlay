@@ -1,0 +1,189 @@
+{
+  "win9": [
+    "v1",
+    "T2",
+    "T3",
+    "CV3",
+    "S6",
+    "CV1",
+    "FS2",
+    "Th10",
+    "AUG1"
+  ],
+  "output_types": {
+    "v1": "regression",
+    "T2": "regression",
+    "T3": "regression",
+    "CV3": "classifier",
+    "S6": "regression",
+    "CV1": "classifier",
+    "FS2": "regression",
+    "Th10": "regression",
+    "AUG1": "regression"
+  },
+  "descriptions": {
+    "v1": "HGBR regressor, 317 base features, target T+1 (next-day return)",
+    "T2": "HGBR regressor, 317 base features, target T+3 (3-day forward return)",
+    "T3": "HGBR regressor, 317 base features, target T+5 (5-day forward return)",
+    "CV3": "LightGBM classifier, all features, target sign(T+1) \u2014 outputs P(up)",
+    "S6": "HGBR regressor on top-50 stable-IC features, target T+1",
+    "CV1": "HGBR classifier + isotonic calibration, all features \u2014 outputs P(up)",
+    "FS2": "HGBR regressor with EMA-5 feature pre-smoothing, target T+1",
+    "Th10": "HGBR regressor, 317 base features, target T+10 (10-day forward return)",
+    "AUG1": "HGBR regressor, 728 augmented features (incl. MOVE/VVIX/TLT/HYG/DXY), target T+1"
+  },
+  "per_model": [
+    {
+      "model": "v1",
+      "type": "regression",
+      "ic_spearman": 0.06628147418550949,
+      "ic_pearson": 0.0799344916713555,
+      "hit_rate_pct": 50.92387287509239,
+      "auc": 0.524671463165777,
+      "sharpe": 1.4211115584724394,
+      "cagr_pct": 7.9919530774910985,
+      "total_pct": 51.10540291404033,
+      "max_dd_pct": -4.011809370235264
+    },
+    {
+      "model": "T2",
+      "type": "regression",
+      "ic_spearman": 0.08169509717421401,
+      "ic_pearson": 0.07902531329958462,
+      "hit_rate_pct": 52.54988913525499,
+      "auc": 0.5379662026353011,
+      "sharpe": 1.223731471305956,
+      "cagr_pct": 6.7075757665690405,
+      "total_pct": 41.703852877559115,
+      "max_dd_pct": -5.433295971588459
+    },
+    {
+      "model": "T3",
+      "type": "regression",
+      "ic_spearman": 0.1554331321915937,
+      "ic_pearson": 0.14037264926351764,
+      "hit_rate_pct": 54.24981522542498,
+      "auc": 0.5688558904541494,
+      "sharpe": 1.2127025723188158,
+      "cagr_pct": 6.787115340613137,
+      "total_pct": 42.27188659661998,
+      "max_dd_pct": -5.69702457816228
+    },
+    {
+      "model": "CV3",
+      "type": "classifier",
+      "ic_spearman": 0.04351164353561531,
+      "ic_pearson": 0.027082947112039877,
+      "hit_rate_pct": 51.81079083518107,
+      "auc": 0.5283082487815345,
+      "sharpe": 0.6102584875073134,
+      "cagr_pct": 3.1603066999422724,
+      "total_pct": 18.18161627201995,
+      "max_dd_pct": -8.697578581979071
+    },
+    {
+      "model": "S6",
+      "type": "regression",
+      "ic_spearman": 0.05347106467267424,
+      "ic_pearson": 0.052479851865496176,
+      "hit_rate_pct": 52.328159645232816,
+      "auc": 0.5436261007790296,
+      "sharpe": 0.7454101175161496,
+      "cagr_pct": 3.843844121503426,
+      "total_pct": 22.44725740968063,
+      "max_dd_pct": -10.108268844116875
+    },
+    {
+      "model": "CV1",
+      "type": "classifier",
+      "ic_spearman": 0.05826637421204239,
+      "ic_pearson": 0.015431166306378393,
+      "hit_rate_pct": 52.993348115299334,
+      "auc": 0.5358007715853408,
+      "sharpe": 0.4173608835660242,
+      "cagr_pct": 1.9299431491030195,
+      "total_pct": 10.808394593979976,
+      "max_dd_pct": -6.781679300017185
+    },
+    {
+      "model": "FS2",
+      "type": "regression",
+      "ic_spearman": 0.05235113336534738,
+      "ic_pearson": 0.03619373523726072,
+      "hit_rate_pct": 51.5890613451589,
+      "auc": 0.5241043785935428,
+      "sharpe": 1.2631058958730166,
+      "cagr_pct": 7.0022555140085485,
+      "total_pct": 43.81760539295507,
+      "max_dd_pct": -7.180647081465152
+    },
+    {
+      "model": "Th10",
+      "type": "regression",
+      "ic_spearman": 0.17602843419615904,
+      "ic_pearson": 0.1862978439964593,
+      "hit_rate_pct": 56.31929046563193,
+      "auc": 0.588336011840901,
+      "sharpe": 1.5041390235920398,
+      "cagr_pct": 8.446039797806382,
+      "total_pct": 54.54822342216481,
+      "max_dd_pct": -4.541686701344916
+    },
+    {
+      "model": "AUG1",
+      "type": "regression",
+      "ic_spearman": 0.08469759640566173,
+      "ic_pearson": 0.10436041036105971,
+      "hit_rate_pct": 53.141167775314116,
+      "auc": 0.5400309159620076,
+      "sharpe": 0.7879896936095547,
+      "cagr_pct": 4.281749991920525,
+      "total_pct": 25.245256575176,
+      "max_dd_pct": -13.181154882934365
+    }
+  ],
+  "mean_offdiag_corr": 0.2698962811242968,
+  "one_day_example": {
+    "date": "2026-05-18",
+    "raws": {
+      "v1": 0.0009642442019976,
+      "T2": 0.0022110280032572,
+      "T3": 0.0046985232524407,
+      "CV3": 0.5921227640317487,
+      "S6": -0.0007185316749638,
+      "CV1": 0.5972222222222222,
+      "FS2": 0.0010838457205307,
+      "Th10": 0.0001793372396241,
+      "AUG1": 0.0011411115912891
+    },
+    "smoothed": {
+      "v1": 0.0010619615254326307,
+      "T2": 0.002855777783526148,
+      "T3": 0.00576571742118609,
+      "CV3": 0.5606319784241975,
+      "S6": 3.719026079762502e-05,
+      "CV1": 0.5585389152625951,
+      "FS2": 0.0002038242430278207,
+      "Th10": 0.0039206578574805424,
+      "AUG1": 0.001192005882063031
+    },
+    "percentiles": {
+      "v1": 0.757871878393051,
+      "T2": 0.7774158523344191,
+      "T3": 0.8555917480998915,
+      "CV3": 0.8409337676438654,
+      "S6": 0.31433224755700323,
+      "CV1": 0.9462540716612378,
+      "FS2": 0.508686210640608,
+      "Th10": 0.5472312703583062,
+      "AUG1": 0.8051031487513572
+    },
+    "avg_pct": 0.7059355772710821,
+    "raw_w": 1.4415490408975749,
+    "weight": 0.6,
+    "weight_prev": 0.6,
+    "turnover": 0.0,
+    "realized_ret": -0.002895215175332,
+    "pnl_bp": -17.371291051992
+  }
+}

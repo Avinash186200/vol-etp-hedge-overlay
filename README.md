@@ -1,10 +1,10 @@
 # Volatility-ETP Hedge Overlay
 
+[![CI](https://github.com/Avinash186200/vol-etp-hedge-overlay/actions/workflows/ci.yml/badge.svg)](https://github.com/Avinash186200/vol-etp-hedge-overlay/actions/workflows/ci.yml) ![Python](https://img.shields.io/badge/python-3.11-blue) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 An ML timing overlay on a simple hedged book: 80% long an S&P 500 ETF (SPY) and 20% long a VIX-futures ETP (VIXY). Each day a model scores the book's next-day return before the close, and the score is turned into a position weight between -1 and +1.
 
 I built this as a research project. After I found and removed a look-ahead bias in the original walk-forward, **the overlay showed no reliable edge on real data**. This repo is the corrected method, run on synthetic prices so anyone can reproduce it, plus an honest account of what went wrong.
-
-[![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 
 ## At a glance
 
@@ -52,7 +52,7 @@ There is no signal in this data, so every model should be at noise level. Among 
 
 ## Later review: what it confirmed and what it added
 
-Since building this repo, I have gone through an independent review of the same project. A colleague ran it on the full research pipeline, with richer data than I can publish. It changed some details but not the verdict.
+Since building this repo, I have gone through an independent review of the same project. It ran on the full research pipeline, with richer data than I can publish. It changed some details but not the verdict.
 
 - **The label-overlap bug is confirmed by tests that need only the scores.** A feature-timestamp audit cannot see this bug, because no feature looks ahead. The review used two checks on the out-of-sample score history instead:
   - **IC by lead**: the leaky multi-horizon members' IC fell to zero exactly at the day where their training labels stopped containing the future return. Honest members showed no such edge.
@@ -100,6 +100,16 @@ python scripts/run_backtest.py --prices my.csv     # your own date,spy,vixy,vix 
 python scripts/leakage_diagnostics.py              # label-overlap fingerprint, leaky vs purged
 ```
 
+## Original research code
+
+[`original/`](original/README.md) holds the code as I first wrote it for this work, sanitised and nothing else:
+client, company and person names replaced, credentials and local paths removed, data files and notebook outputs
+dropped, and internal deployment notes, client-facing decks and client findings memos left out. It is kept so
+the real work can be read alongside the maintained version. Some of it contains the issues
+described above; comparing the two shows each fix.
+
 ## License
 
 MIT
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [CHANGELOG](CHANGELOG.md).

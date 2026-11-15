@@ -1,0 +1,30 @@
+{
+  "headline_sharpe": 2.2816,
+  "bootstrap_p5": 1.638,
+  "bootstrap_median": 2.316,
+  "bootstrap_p95": 2.914,
+  "permutation_pvalue": 0.0,
+  "permutation_median": -0.0594,
+  "member_dropout_min_sharpe": 2.193,
+  "member_contributions": {
+    "v1": -0.0005,
+    "T2": 0.0176,
+    "T3": 0.087,
+    "CV3": 0.019,
+    "S6": 0.0599,
+    "CV1": 0.0724,
+    "FS2": 0.0317,
+    "Th10": 0.0654,
+    "AUG1": 0.0889
+  },
+  "decile_top_bot_spread_bp": 9.48,
+  "decile_monotonic_score": 0.444,
+  "reproducibility_max_diff": 0.0,
+  "checks_passed": 22,
+  "checks_total": 24,
+  "failed_checks": [
+    "E3 \u2014 Removing any single member keeps Sharpe \u2265 2.20",
+    "E4 \u2014 Decile calibration is monotonically increasing in realized return"
+  ],
+  "verdict": "REVIEW REQUIRED"
+}

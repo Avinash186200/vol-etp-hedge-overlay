@@ -1,0 +1,21 @@
+{
+  "_comment": "Edit these values on the server before first run.",
+
+  "drive_folder_id": "<PASTE_GOOGLE_DRIVE_FOLDER_ID_HERE>",
+  "capital_usd": 10000000,
+  "position_clip": 0.6,
+  "scale": 3.5,
+  "ema_span": 7,
+
+  "_data_sources": {
+    "yahoo": "Used for SPY/VIXY/^VIX OHLC + vol-family + rates + cross-asset ETFs",
+    "finnhub_optional": "Single-stock dispersion (only if upstream feats.csv is plumbed in)"
+  },
+
+  "_notes": {
+    "schedule": "Tue-Sat 00:45 IST (= ~45 min before US market close)",
+    "weekly_refit": "Weekly refit runs on IST Tuesday (= US Monday) before signal step",
+    "embargo_days": 2,
+    "ensemble_members": ["v1","T2","T3","CV3","S6","CV1","FS2","Th10","AUG1","LGB_h10","AUG_h20"]
+  }
+}

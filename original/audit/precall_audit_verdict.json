@@ -1,0 +1,28 @@
+{
+  "headline_sharpe": 2.2816,
+  "bootstrap_ci_p5_p50_p95": [
+    1.64,
+    2.308,
+    2.949
+  ],
+  "permutation_pvalue_B500": 0.0,
+  "permutation_median_perm": -0.0547,
+  "cost_bp": 0.9,
+  "embargo_days": 2,
+  "refit_every_days": 5,
+  "live_oos_start": "2021-01-01",
+  "live_oos_days": 1353,
+  "members": [
+    "v1",
+    "T2",
+    "T3",
+    "CV3",
+    "S6",
+    "CV1",
+    "FS2",
+    "Th10",
+    "AUG1"
+  ],
+  "leak_check": "PASS \u2014 past-only percentile verified by manual scan",
+  "final_verdict": "PASS \u2014 safe to present"
+}

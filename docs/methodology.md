@@ -50,7 +50,7 @@ The research version also used intraday 3pm snapshots, cross-asset ETFs, sector 
 
 ## Later independent review
 
-A colleague later reviewed the full research pipeline: the original models, a richer feature set and a futures implementation of the same book. I read it against this repo. What follows is what it confirmed, what it added, and what I did and did not port.
+A later review covered the full research pipeline: the original models, a richer feature set and a futures implementation of the same book. I read it against this repo. What follows is what it confirmed, what it added, and what I did and did not port.
 
 ### Label overlap, confirmed by score-only tests (ported)
 
