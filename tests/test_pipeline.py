@@ -104,3 +104,17 @@ def test_walk_forward_fits_on_purged_rows(h, leaky):
         wf.make_model = real
     # first fit is for prediction row 600: rows [0, 600 - gap) are used
     assert sizes[0] == 600 - purge_rows(h, leaky=leaky)
+
+
+def test_make_synthetic_data_script_roundtrip(tmp_path):
+    """The sample CSV written by the script loads back to the generator's prices."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    import make_synthetic_data
+
+    from volhedge.data import load_prices
+
+    out = tmp_path / "prices.csv"
+    assert make_synthetic_data.main(["--days", "300", "--out", str(out)]) == 0
+    df = load_prices(str(out))
+    assert len(df) == 300
+    assert np.allclose(df["spy"].values, make_synthetic_prices(300)["spy"].values)

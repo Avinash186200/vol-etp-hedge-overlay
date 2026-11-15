@@ -6,6 +6,10 @@ An ML timing overlay on a simple hedged book: 80% long an S&P 500 ETF (SPY) and 
 
 I built this as a research project. After I found and removed a look-ahead bias in the original walk-forward, **the overlay showed no reliable edge on real data**. This repo is the corrected method, run on synthetic prices so anyone can reproduce it, plus an honest account of what went wrong.
 
+## What problem this solves
+
+A volatility ETP is a good crash hedge, but it loses value almost every day, so holding it all the time is expensive. The question here is whether a daily model can say when to hold the hedged book, hold less of it, or reverse it, and beat holding it all the time. The bigger lesson is how a backtest can look good because of a subtle label leak, and how to catch it.
+
 ## At a glance
 
 | | |
@@ -18,15 +22,50 @@ I built this as a research project. After I found and removed a look-ahead bias 
 
 ## How it works
 
-```
-closes ──► features (<= t-1) ──► purged walk-forward ──► score ──► EMA + past-only pct ──► weight w ──► w x book return - costs
- data.py    features.py          walkforward.py                    strategy.py
+```mermaid
+flowchart LR
+    A[daily closes<br/>data.py] --> B[features up to t-1<br/>features.py]
+    B --> C[purged expanding<br/>walk-forward<br/>walkforward.py]
+    C --> D[score per day]
+    D --> E[EMA + past-only percentile<br/>strategy.py]
+    E --> F[weight w in -1..+1]
+    F --> G[w x book return - costs]
+    G --> H[Sharpe, drawdown,<br/>block-permutation p]
+    D --> I[IC by lead,<br/>refit-cycle fingerprint<br/>diagnostics.py]
 ```
 
 1. **Features** in row t use closes up to t-1: lagged returns, realised vol (5/21/63d), momentum vs moving averages, VIX level / change / z-score, VIX minus realised vol, and an expanding (never full-sample) VIX z-score.
 2. **Target**: forward h-day return of the 80/20 book from close[t]. PnL always uses the T+1 return.
 3. **Walk-forward**: retrain on an expanding window. The last training row is at least `horizon + embargo` rows before the prediction row, so no training label overlaps the return being predicted.
 4. **Position**: EMA(7) of the score, ranked against strictly earlier smoothed scores, then `w = clip(2*pct - 1, -1, 1)`. Costs are 2 bp per unit of turnover.
+5. **Compare** every model against the static 80/20 book and a constant short book on the same days, and test it with a block permutation.
+6. **Diagnose** label overlap from the score history alone (`scripts/leakage_diagnostics.py`).
+
+A step-by-step code walkthrough with real intermediate output is in [docs/walkthrough.md](docs/walkthrough.md).
+
+## Key concepts
+
+- **Volatility ETP**: an exchange-traded product that holds short-dated VIX futures. It jumps in a crash and decays most other days because of futures roll.
+- **Overlay**: a model that scales an existing book up, down or to the other side, instead of picking assets.
+- **Label horizon (T+h)**: the target is the book's return over the next h days.
+- **Look-ahead leakage**: any feature, label or setting that uses information from after the decision time.
+- **Label overlap**: a training label that covers the same days as the return being predicted. The model learns the answer even though no feature looks ahead.
+- **Purge and embargo**: leave a gap of `horizon + embargo` rows between the last training row and the prediction row, so no training label overlaps.
+- **Expanding walk-forward**: refit on all data so far, predict the next block, move forward.
+- **Past-only percentile**: rank today's score only against earlier scores, so the weight never uses future scores.
+- **Information coefficient (IC)**: the rank correlation between a score and the return it predicts.
+- **Block permutation test**: shuffle positions in 21-day blocks to build a null that keeps autocorrelation, then ask how often chance does as well.
+- **Constant-short baseline**: always -1 x the book. It earns the ETP decay with no model, so a model must beat it to show skill.
+- **Sharpe ratio**: mean daily return divided by its standard deviation, scaled by the square root of 252.
+
+## What you will learn
+
+- How to build daily features that only use closes up to t-1, and how to test that.
+- Why a multi-day label needs a purge as long as its horizon, not a fixed small embargo.
+- How to turn a model score into a position without peeking at future scores.
+- Why the right baseline matters: a model that is just net-short a decaying product is not skill.
+- How to test significance with a block permutation instead of a day-by-day shuffle.
+- How to detect label overlap from out-of-sample scores, when a feature audit passes.
 
 ## Bias found -> fix -> corrected result
 
@@ -38,7 +77,7 @@ This is the most important part of the project.
 
 **Corrected result.** With the purge in place and the other issues below fixed, the real-data overlay did not beat simple baselines in a way that survived significance testing. Most of what looked like skill was the overlay being net-short a product that decays every day, which a constant short position earns without any model. The earlier headline Sharpe figures came from the biased pipeline and I have withdrawn them. I don't publish any real-data performance numbers here.
 
-The same effect shows on synthetic data (`python scripts/run_backtest.py`, seed 7, 2,000 days, 999 evaluated days, 2 bp costs):
+The same effect shows on **synthetic** data. Every number in this table and the paragraph after it comes from the synthetic generator, not from real prices (`python scripts/run_backtest.py`, seed 7, 2,000 days, 999 evaluated days, 2 bp costs):
 
 | Book | Sharpe | Total | Max DD | Perm. p | Mean weight |
 |---|---|---|---|---|---|
@@ -83,10 +122,11 @@ All of these were in the original research code. The details are in [docs/method
 
 ```
 src/volhedge/   data.py · features.py · walkforward.py · strategy.py · diagnostics.py
-scripts/        run_backtest.py · leakage_diagnostics.py
+scripts/        run_backtest.py · leakage_diagnostics.py · make_synthetic_data.py
 tests/          feature timing, purge, leaky-gap overlap, past-only positions, noise, planted signal,
                 label-overlap counts, fingerprint and IC-by-lead on planted cases
-docs/           methodology.md
+docs/           README.md (index) · methodology.md · walkthrough.md
+original/       the original research code, sanitised (read-only)
 ```
 
 ## Quick start
@@ -96,9 +136,13 @@ pip install -r requirements.txt
 python -m pytest -q
 python scripts/run_backtest.py                     # synthetic, no signal
 python scripts/run_backtest.py --signal 0.3        # synthetic, planted signal
-python scripts/run_backtest.py --prices my.csv     # your own date,spy,vixy,vix closes
+python scripts/make_synthetic_data.py              # writes data/prices.csv
+python scripts/run_backtest.py --prices data/prices.csv
 python scripts/leakage_diagnostics.py              # label-overlap fingerprint, leaky vs purged
 ```
+
+The `--prices` run shows how to use your own data: any CSV with `date,spy,vixy,vix` daily closes. Each backtest
+takes about a minute, because it refits three walk-forwards.
 
 ## Original research code
 
